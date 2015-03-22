@@ -1,5 +1,8 @@
 package com.example.archy.livewell;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -7,16 +10,23 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class AccelService extends Service implements SensorEventListener {
 
     AppSQLiteHelper db = new AppSQLiteHelper(this);
+    private Messenger mClient;
+    public static final int MSG_REGISTER_CLIENT = 1;
+    public static final int MSG_UNREGISTER_CLIENT = 2;
+    public static final int MSG_MOTOR_UPDATE = 3;
 
     public static final int ACCELEROMETER_BLOCK_CAPACITY = 64;
     private SensorManager mSensorManager;
@@ -29,27 +39,94 @@ public class AccelService extends Service implements SensorEventListener {
             new IncomingMessageHandler()); // Target we publish for clients
 
     static AccelService service;
+    NotificationManager notifManager;
 
-    public class TrackingBinder extends Binder {
+
+/* =================== INSTANTIATE =================== */
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        setupNotification();
+    }
+
+    public class AccelBinder extends Binder {
         AccelService getService() {
             service = AccelService.this;
             return AccelService.this;
         }
     }
-    private final IBinder binder = new TrackingBinder();
+    private final IBinder binder = new AccelBinder();
 
-    /* instantiate in other classes */
     public static AccelService get() {
         return service;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d("SERVICE", "ONBIND");
-
-        return mMessenger.getBinder();
+        Log.d("AccelService", "ONBIND");
+        //return mMessenger.getBinder();
+        return binder;
     }
 
+
+    // display in status bar
+    public void setupNotification() {
+        Intent i = new Intent(this, MainActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        //Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(MapDisplayActivity.class)));
+        //i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, i, 0);
+        //PendingIntent. FLAG_UPDATE_CURRENT);
+        // set up notification UI
+        notifManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
+        Notification notif = new Notification.Builder(this).setContentTitle("LiveWell")
+                .setContentText("Recording your mood now")//.setSmallIcon(R.drawable.icon)
+                .setContentIntent(pIntent).build();
+        notif.flags = Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
+        //notif.flags |= Notification.FLAG_AUTO_CANCEL;
+        notifManager.notify(0, notif);
+    }
+
+/* =================== MESSAGE HANDLING =================== */
+
+    private void sendMessageToActivity(int messageType, Double type) {
+        if (mClient != null) {
+            try {
+                Message msg;
+                Bundle bundle = new Bundle();
+                switch (messageType) {
+                    case MSG_MOTOR_UPDATE:
+                        msg = Message.obtain(null, MSG_MOTOR_UPDATE);
+                        bundle.putDouble("classification", type);
+                        msg.setData(bundle);
+                        break;
+                    default:
+                        msg = Message.obtain(null, MSG_MOTOR_UPDATE);
+                        break;
+                }
+                mClient.send(msg);
+            // dead client
+            } catch (RemoteException e) {
+                mClient = null;
+            }
+        }
+    }
+
+    private class IncomingMessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_REGISTER_CLIENT:
+                    mClient = msg.replyTo;
+                    break;
+                case MSG_UNREGISTER_CLIENT:
+                    mClient = null;
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
+        }
+    }
 
 /* ================== SENSOR METHODS ================== */
 
@@ -78,8 +155,11 @@ public class AccelService extends Service implements SensorEventListener {
                 // classify feature vector and input to db
                 try {
                     double classification = WekaClassifier.classify(featVect.toArray());
-                    //Log.d("SENSOR", "adding to db!");
+                    Log.d("SENSOR", "adding to db!");
                     db.insertSensorData(classification);
+
+                    // send to Activity
+                    sendMessageToActivity(MSG_MOTOR_UPDATE, classification);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

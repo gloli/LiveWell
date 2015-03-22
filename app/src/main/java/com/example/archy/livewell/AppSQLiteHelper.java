@@ -2,6 +2,7 @@ package com.example.archy.livewell;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -43,19 +44,19 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
     // create tables
     private static final String DB_CREATE_SENSOR = "create table "
             + TABLE_SENSOR + "("
-            + COLUMN_SENSOR_ID + "integer primary key autoincrement, "
+            + COLUMN_SENSOR_ID + " integer primary key autoincrement, "
             + COLUMN_SENSOR_TIMESTAMP + "timestamp not null default current_timestamp, "
             + COLUMN_SENSOR_CLASSIFIER + " double" + ");";
 
     private static final String DB_CREATE_MOOD = "create table "
             + TABLE_MOOD + "("
-            + COLUMN_MOOD_ID + "integer primary key autoincrement, "
+            + COLUMN_MOOD_ID + " integer primary key autoincrement, "
             + COLUMN_MOOD_TIMESTAMP + "timestamp not null default current_timestamp, "
             + COLUMN_MOOD_DATA + " double" + ");";
 
     private static final String DB_CREATE_WEATHER = "create table "
             + TABLE_WEATHER + "("
-            + COLUMN_WEATHER_ID + "integer primary key autoincrement, "
+            + COLUMN_WEATHER_ID + " integer primary key autoincrement, "
             + COLUMN_WEATHER_TIMESTAMP + "timestamp not null default current_timestamp, "
             + COLUMN_WEATHER_DATA + " double" + ");";
 
@@ -102,6 +103,13 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
         db.close();
         return insert;
     }
+
+/* ===================== fetch from tables ===================== */
+
+//    public Double getMotorData() {
+//        db = getReadableDatabase();
+//        Cursor cursor = db.query(TABLE_SENSOR, sensor_columns, )
+//    }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
