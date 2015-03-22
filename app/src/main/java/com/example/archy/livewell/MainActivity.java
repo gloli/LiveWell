@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,7 +28,7 @@ public class MainActivity extends Activity {
     public static class Splash extends Activity {
 
         /** Duration of wait **/
-        private final int SPLASH_DISPLAY_LENGTH = 1000;
+        private final int SPLASH_DISPLAY_LENGTH = 2000;
 
         /** Called when the activity is first created. */
         @Override
@@ -49,8 +50,8 @@ public class MainActivity extends Activity {
         }
     }
 
-    private Button goodButton;
-    private Button badButton;
+    private ImageButton goodButton;
+    private ImageButton badButton;
     private TextView motorText;
 
     private AppSQLiteHelper dbHelper;
@@ -69,8 +70,8 @@ public class MainActivity extends Activity {
 
         dbHelper = new AppSQLiteHelper(this);
         motorText = (TextView) findViewById(R.id.motor_text);
-        goodButton = (Button) findViewById(R.id.good_button);
-        badButton =  (Button) findViewById(R.id.bad_button);
+        goodButton = (ImageButton) findViewById(R.id.good_button);
+        badButton =  (ImageButton) findViewById(R.id.bad_button);
 
         goodButton.setOnClickListener(new View.OnClickListener() {
             @Override
