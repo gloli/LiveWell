@@ -39,7 +39,7 @@
             android:background="@drawable/abc_list_selector_background_transition_holo_light"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/imageButton"
-            android:paddingLeft="50dp" />
+            android:paddingLeft="50dp"/>
 
         <ImageButton
             android:layout_width="match_parent"
@@ -64,7 +64,8 @@
         android:background="@drawable/abc_list_selector_background_transition_holo_light"
         android:layout_marginBottom="37dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="sendMessage"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

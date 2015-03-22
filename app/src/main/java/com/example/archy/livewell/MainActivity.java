@@ -18,14 +18,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.content.Intent;
 
 
 public class MainActivity extends Activity {
+
+    public final static String EXTRA_MESSAGE = "com.mycompany.myfirstapp.MESSAGE";
 
     public static class Splash extends Activity {
 
@@ -81,6 +85,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 dbHelper.insertMoodData(MOOD_GOOD);
+
             }
         });
 
@@ -102,6 +107,14 @@ public class MainActivity extends Activity {
 
     }
 
+    public void sendMessage(View view) {
+        Intent intent = new Intent(this, DisplayMessage.class);
+        //EditText editText = (EditText) findViewById(R.id.edit_message);
+        //String message = editText.getText().toString();
+        //intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
+    }
+
 /* =================== SERVICE FUNCTIONS =================== */
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -109,7 +122,6 @@ public class MainActivity extends Activity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.d(TAG, "onServiceConnected()");
             mService = ((AccelService.AccelBinder) service).getService();
-
         }
 
         @Override
