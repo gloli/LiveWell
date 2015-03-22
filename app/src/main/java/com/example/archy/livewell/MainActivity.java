@@ -1,5 +1,7 @@
 package com.example.archy.livewell;
 
+
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -49,6 +51,8 @@ public class MainActivity extends Activity {
 
         }
     }
+
+    View viewToAnimate;
 
     private ImageButton goodButton;
     private ImageButton badButton;
