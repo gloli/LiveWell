@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.example.archy.livewell.weather.AppEntry;
 
@@ -22,7 +23,7 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
 
     private SQLiteDatabase db;
     private static AppSQLiteHelper helper;
-    private long maxId = 0;     // tracking input mood
+    private long maxId;     // tracking input mood
 
     private static final String DATABASE_NAME = "livewell.db";
     private static final int DATABASE_VERSION = 1;
@@ -40,7 +41,7 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
     private static final String COLUMN_MOOD_ID = "mood_id";
     private static final String COLUMN_MOOD_TIMESTAMP = "mood_timestamp";
     private static final String COLUMN_MOOD_DATA = "mood_input";
-    private String[] mood_columns = new String[] {COLUMN_MOOD_ID, COLUMN_MOOD_TIMESTAMP, COLUMN_MOOD_DATA};
+    private String[] mood_columns = new String[] {COLUMN_MOOD_ID, COLUMN_MOOD_DATA};
 
     // weather table
     private static final String TABLE_WEATHER = "weather_data";
@@ -60,7 +61,7 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
     private static final String DB_CREATE_MOOD = "create table "
             + TABLE_MOOD + "("
             + COLUMN_MOOD_ID + " integer primary key autoincrement, "
-            + COLUMN_MOOD_TIMESTAMP + "timestamp not null default current_timestamp, "
+            //+ COLUMN_MOOD_TIMESTAMP + "timestamp not null default current_timestamp, "
             + COLUMN_MOOD_DATA + " double" + ");";
 
     private static final String DB_CREATE_WEATHER = "create table "
@@ -108,6 +109,7 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
         ContentValues vals = new ContentValues();
         vals.put(COLUMN_MOOD_DATA, mood);
         long insert = db.insert(AppSQLiteHelper.TABLE_MOOD, null, vals);
+        Log.d("DB", "inserted " +insert+" into db");
         db.close();
         maxId = insert;
         return insert;
@@ -149,13 +151,14 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
     // output last known mood
     public double getLastMood() {
         db = getReadableDatabase();
-        double data = 0.0;
-        String selectQuery = "SELECT  * FROM " + "sqlite_sequence";
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        double data = -100.0;
+        Cursor cursor = db.rawQuery("SELECT * FROM "+TABLE_MOOD
+                +" WHERE "+COLUMN_MOOD_ID+" = (SELECT MAX("+COLUMN_MOOD_ID+") FROM " +TABLE_MOOD +");", null);
         if (cursor != null && cursor.moveToFirst()) {
             // get last id
             cursor.moveToLast();
-            data = cursor.getDouble(2);
+            data = cursor.getDouble(1);
+            Log.d("DB", "returning id "+cursor.getInt(0)+" with mood " + cursor.getDouble(1));
         }
 
         cursor.close();

@@ -66,13 +66,6 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:onClick="sendMessage"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Motor State"
-        android:id="@+id/motor_text"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="187dp" />
 
 
 

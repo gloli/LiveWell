@@ -44,6 +44,7 @@ public class AccelService extends Service implements SensorEventListener,
     public static final int MSG_REGISTER_CLIENT = 1;
     public static final int MSG_UNREGISTER_CLIENT = 2;
     public static final int MSG_MOTOR_UPDATE = 3;
+    public static final int MSG_WELLNESS_UPDATE = 4;
 
     // sensor & classifier vars
     public static final int ACCELEROMETER_BLOCK_CAPACITY = 64;
@@ -68,7 +69,6 @@ public class AccelService extends Service implements SensorEventListener,
     public double middleTemp = 62.0;
     public double middleActive = 0.0;
     //public double middleWeather = 100.0;
-
 
 /* =================== INSTANTIATE =================== */
     @Override
@@ -138,6 +138,9 @@ public class AccelService extends Service implements SensorEventListener,
                         msg = Message.obtain(null, MSG_MOTOR_UPDATE);
                         bundle.putDouble("classification", type);
                         msg.setData(bundle);
+                        break;
+                    case MSG_WELLNESS_UPDATE:
+                        msg = Message.obtain(null, MSG_WELLNESS_UPDATE);
                         break;
                     default:
                         msg = Message.obtain(null, MSG_MOTOR_UPDATE);
@@ -284,16 +287,13 @@ public class AccelService extends Service implements SensorEventListener,
             e.printStackTrace();
         } */
 
-
-            // TODO: helper function
-            //db.getLastMood();                   // returns 0.0 if bad, 1.0 if good
-            //db.getListMode(db.getMotorData());  // returns most common activity for the last hour - 0.0 = standing, 1.0 = walk, 2.0 = run
+            // helper function
             if(db.getLastMood() == 0.0) {
                 middleActive = db.getListMode(db.getMotorData());
             }
             if(db.getListMode(db.getMotorData()) == middleActive) {
                 //call function to send notification with a "get more active" notice
-
+                sendMessageToActivity(MSG_WELLNESS_UPDATE, 0.0);
             }
     }
 

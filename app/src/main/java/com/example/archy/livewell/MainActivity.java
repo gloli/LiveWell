@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.content.Intent;
+import android.widget.Toast;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -35,7 +36,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.Random;
-
 
 public class MainActivity extends Activity {
 
@@ -87,7 +87,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         dbHelper = new AppSQLiteHelper(this);
-        motorText = (TextView) findViewById(R.id.motor_text);
         goodButton = (ImageButton) findViewById(R.id.good_button);
         badButton =  (ImageButton) findViewById(R.id.bad_button);
 
@@ -95,6 +94,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 dbHelper.insertMoodData(MOOD_GOOD);
+                Toast.makeText(MainActivity.this, "Mood recorded!", Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -103,69 +103,28 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 dbHelper.insertMoodData(MOOD_BAD);
+
+                Toast.makeText(MainActivity.this, "Mood recorded!", Toast.LENGTH_SHORT).show();
+                startDialog();
             }
         });
 
-        // begin AccelService
-        Intent accelIntent = new Intent(this, AccelService.class);
-        messenger = new Messenger(new IncomingMessageHandler());
-        accelIntent.putExtra(INTENT_MSG, messenger);
+    }
 
-        startService(accelIntent);
-        Log.d(TAG, "service started");
-        bindService(accelIntent, mConnection, Context.BIND_AUTO_CREATE);
-
+    public void startDialog() {
+        Intent i = new Intent(this, DisplayMessage.class);
+        i.putExtra("dialog", true);
+        startActivity(i);
     }
 
     public void sendMessage(View view) {
         Intent intent = new Intent(this, DisplayMessage.class);
         //EditText editText = (EditText) findViewById(R.id.edit_message);
         //String message = editText.getText().toString();
-        //intent.putExtra(EXTRA_MESSAGE, message);
+        intent.putExtra("dialog", false);
         startActivity(intent);
     }
 
-/* =================== SERVICE FUNCTIONS =================== */
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d(TAG, "onServiceConnected()");
-            mService = ((AccelService.AccelBinder) service).getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            // unexpected crash
-            Log.d(TAG, "CRASH");
-            mService = null;
-            messenger = null;
-            unbindService(mConnection);
-        }
-    };
-
-    // handle messages from service
-    private class IncomingMessageHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            Log.d(TAG, "handling message " + msg.what);
-            // handle different types of messages from TrackingService
-            Bundle bundle = msg.getData();
-            double classification = bundle.getDouble("classification");
-
-            switch ((int) classification) {
-                case (0):
-                    motorText.setText("Standing");
-                    break;
-                case (1):
-                    motorText.setText("Walking");
-                    break;
-                case (2):
-                    motorText.setText("Running");
-                    break;
-            }
-        }
-    }
 
 
     @Override
@@ -191,7 +150,7 @@ public class MainActivity extends Activity {
     }
 
 
-    public class StateDialogFrag extends DialogFragment {
+    public static class StateDialogFrag extends DialogFragment {
 
 
         View v;
@@ -230,5 +189,3 @@ public class MainActivity extends Activity {
         }
     }
 }
-
-
