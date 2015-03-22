@@ -15,10 +15,14 @@
         android:gravity="center"
         android:textSize="35dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="180dp"
         android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:textStyle="italic"
+        android:typeface="normal"
+        android:focusableInTouchMode="false"
+        android:elegantTextHeight="false"
+        android:layout_above="@+id/good_button"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="34dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,27 +30,6 @@
         android:id="@+id/buttons"
         android:layout_below="@+id/textView"
         android:layout_alignParentStart="true">
-
-    <ImageButton
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bad"
-        android:id="@+id/bad_button"
-        android:layout_weight="1.0"
-        android:layout_below="@+id/textView"
-        android:layout_alignEnd="@+id/textView"
-        android:src="@drawable/sad_face"
-        android:background="@drawable/abc_list_selector_background_transition_holo_light" />
-    <ImageButton
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Good"
-        android:id="@+id/good_button"
-        android:layout_weight="1.0"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true"
-        android:src="@drawable/happy_face"
-        android:background="@drawable/abc_list_selector_background_transition_holo_light" />
 
 
     </LinearLayout>
@@ -60,6 +43,37 @@
         android:layout_alignEnd="@+id/textView"
         android:layout_marginEnd="187dp" />
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButton"
+        android:src="@drawable/data_icon"
+        android:background="@drawable/abc_list_selector_background_transition_holo_light"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="35dp" />
+
+    <ImageButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Good"
+        android:id="@+id/good_button"
+        android:layout_weight="1.0"
+        android:src="@drawable/happy_face"
+        android:background="@drawable/abc_list_selector_background_transition_holo_light"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/bad_button" />
+
+    <ImageButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bad"
+        android:id="@+id/bad_button"
+        android:layout_weight="1.0"
+        android:src="@drawable/sad_face"
+        android:background="@drawable/abc_list_selector_background_transition_holo_light"
+        android:layout_alignTop="@+id/buttons"
+        android:layout_alignEnd="@+id/motor_text" />
 
 
 </RelativeLayout>
