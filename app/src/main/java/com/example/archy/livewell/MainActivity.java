@@ -25,6 +25,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.content.Intent;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import java.util.Random;
 
 
 public class MainActivity extends Activity {
@@ -179,4 +189,46 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+    public class StateDialogFrag extends DialogFragment {
+
+
+        View v;
+
+        private static final String INACTIVITY_MESSAGE = "Take a walk, have fun, and get active!";
+        private static final String COLD_WEATHER = "It's chilly out; grab a jacket and some hot chocolate!";
+        private static final String INSPIRATION = "Every moment is a fresh beginning; never, never, never give up!";
+        private static final String COURAGE = "No one can make you feel inferior without your consent!";
+
+        public StateDialogFrag() {
+            // Empty constructor required for DialogFragment
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+            Random rand = new Random();
+            int num = rand.nextInt(4);
+            String info = "";
+            switch(num) {
+                case 0:  info += INACTIVITY_MESSAGE;
+                    break;
+                case 1: info+= COLD_WEATHER;
+                    break;
+                case 2: info += INSPIRATION;
+                    break;
+                default: info += COURAGE;
+                    break;
+            }
+
+            // display stats
+            builder.setTitle("LiveWell, Be Happy!").setMessage(info);
+            info = "";
+            return builder.create();
+        }
+    }
 }
+
+

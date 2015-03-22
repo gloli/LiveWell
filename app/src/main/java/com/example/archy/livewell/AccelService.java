@@ -64,6 +64,11 @@ public class AccelService extends Service implements SensorEventListener,
     static AccelService service;
     NotificationManager notifManager;
 
+    //For the updating heuristic model
+    public double middleTemp = 62.0;
+    public double middleActive = 0.0;
+    //public double middleWeather = 100.0;
+
 
 /* =================== INSTANTIATE =================== */
     @Override
@@ -279,11 +284,17 @@ public class AccelService extends Service implements SensorEventListener,
             e.printStackTrace();
         } */
 
+
             // TODO: helper function
-            db.getLastMood();                   // returns 0.0 if bad, 1.0 if good
-            db.getListMode(db.getMotorData());  // returns most common activity - 0.0 = standing, 1.0 = walk, 2.0 = run
+            //db.getLastMood();                   // returns 0.0 if bad, 1.0 if good
+            //db.getListMode(db.getMotorData());  // returns most common activity for the last hour - 0.0 = standing, 1.0 = walk, 2.0 = run
+            if(db.getLastMood() == 0.0) {
+                middleActive = db.getListMode(db.getMotorData());
+            }
+            if(db.getListMode(db.getMotorData()) == middleActive) {
+                //call function to send notification with a "get more active" notice
 
-
+            }
     }
 
     @Override
