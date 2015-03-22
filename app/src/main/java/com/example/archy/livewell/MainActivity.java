@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
     AccelService mService;
     private Messenger messenger;
     private final String TAG = "MainActivity";
+    public static final String INTENT_MSG = "Messenger";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,15 +61,13 @@ public class MainActivity extends Activity {
         // begin AccelService
         Intent accelIntent = new Intent(this, AccelService.class);
         messenger = new Messenger(new IncomingMessageHandler());
-        accelIntent.putExtra("Messenger", messenger);
+        accelIntent.putExtra(INTENT_MSG, messenger);
 
         startService(accelIntent);
         Log.d(TAG, "service started");
         bindService(accelIntent, mConnection, Context.BIND_AUTO_CREATE);
 
     }
-
-
 
 /* =================== SERVICE FUNCTIONS =================== */
 

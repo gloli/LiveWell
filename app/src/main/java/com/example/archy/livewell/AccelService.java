@@ -68,9 +68,17 @@ public class AccelService extends Service implements SensorEventListener {
         return binder;
     }
 
+    @Override
+    // set up sensor and messenger
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        mClient = intent.getParcelableExtra(MainActivity.INTENT_MSG);
+        startSensorUpdate();
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     // display in status bar
     public void setupNotification() {
+        Log.d("AccelService", "setupNotification()");
         Intent i = new Intent(this, MainActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         //Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(String.valueOf(MapDisplayActivity.class)));
@@ -90,6 +98,7 @@ public class AccelService extends Service implements SensorEventListener {
 /* =================== MESSAGE HANDLING =================== */
 
     private void sendMessageToActivity(int messageType, Double type) {
+        Log.d("AccelService", "sending msg to activity...");
         if (mClient != null) {
             try {
                 Message msg;
