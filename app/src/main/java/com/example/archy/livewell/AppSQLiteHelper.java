@@ -22,6 +22,7 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
 
     private SQLiteDatabase db;
     private static AppSQLiteHelper helper;
+    private long maxId = 0;     // tracking input mood
 
     private static final String DATABASE_NAME = "livewell.db";
     private static final int DATABASE_VERSION = 1;
@@ -108,6 +109,7 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
         vals.put(COLUMN_MOOD_DATA, mood);
         long insert = db.insert(AppSQLiteHelper.TABLE_MOOD, null, vals);
         db.close();
+        maxId = insert;
         return insert;
     }
 
@@ -143,6 +145,54 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
         db.close();
         return classes;
     }
+
+    // output last known mood
+    public double getLastMood() {
+        db = getReadableDatabase();
+        double data = 0.0;
+        String selectQuery = "SELECT  * FROM " + "sqlite_sequence";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            // get last id
+            cursor.moveToLast();
+            data = cursor.getDouble(2);
+        }
+
+        cursor.close();
+        db.close();
+        return data;
+    }
+
+    // output single sensor val
+    public static double getListMode(ArrayList<Double> data) {
+        int[] tracking = {0, 0, 0};
+        int stand = tracking[0];
+        int walk = tracking[1];
+        int run = tracking[2];
+        int max = 0;
+        double maxState = 0.0;
+
+        if (!data.isEmpty()) {
+            for (double item : data) {
+                if (item == 0.0)
+                    stand++;
+                else if (item == 1.0)
+                    walk++;
+                else if (item == 2.0)
+                    run++;
+            }
+            for (int i = 0; i < tracking.length; i++) {
+                if (tracking[i] > max)
+                    maxState = (double) i;
+            }
+            return maxState;
+        }
+        return maxState;
+    }
+
+    // output avg weather vals
+
+
 
 
 

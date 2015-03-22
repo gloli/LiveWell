@@ -50,17 +50,17 @@ public class WeatherHttpClient {
         String base_url = "http://api.openweathermap.org/data/2.5/weather?lat="+lat+"&lon="+lon;
 
         try {
-            con = (HttpURLConnection) ( new URL(base_url)).openConnection();
+            con = (HttpURLConnection) (new URL(base_url)).openConnection();
             con.setRequestMethod("GET");
             con.setDoInput(true);
             con.setDoOutput(true);
             con.connect();
 
             // Let's read the response
-            StringBuffer buffer = new StringBuffer();
             is = con.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String line = null;
+            String line;
+            StringBuffer buffer = new StringBuffer();
             while (  (line = br.readLine()) != null )
                 buffer.append(line + "\r\n");
 

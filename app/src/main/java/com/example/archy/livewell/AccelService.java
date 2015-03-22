@@ -10,8 +10,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
+import com.google.android.gms.location.LocationListener;
 
 import com.example.archy.livewell.weather.AppEntry;
 import com.example.archy.livewell.weather.JSONWeatherParser;
@@ -35,9 +35,9 @@ import org.json.JSONException;
 import java.util.ArrayList;
 
 public class AccelService extends Service implements SensorEventListener,
+        LocationListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        GoogleApiClient.OnConnectionFailedListener {
 
     public AppSQLiteHelper db = new AppSQLiteHelper(this);
     private Messenger mClient;
@@ -70,6 +70,7 @@ public class AccelService extends Service implements SensorEventListener,
     public void onCreate() {
         super.onCreate();
         setupNotification();
+        startGoogleClient();
     }
 
     public class AccelBinder extends Binder {
@@ -237,6 +238,17 @@ public class AccelService extends Service implements SensorEventListener,
     }
 
     // ==================== Google Map API Functions ====================
+
+    protected synchronized void startGoogleClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+        mGoogleApiClient.connect();
+    }
+
+
     @Override
     public void onConnected(Bundle bundle) {
         Log.d("UPDATING LOCATIONS", "ONCONNECTED");
@@ -245,7 +257,7 @@ public class AccelService extends Service implements SensorEventListener,
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(600000); // Update location every 10 mins
         LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, (com.google.android.gms.location.LocationListener) this);
+                mGoogleApiClient, mLocationRequest, this);
     }
 
     @Override
@@ -254,6 +266,7 @@ public class AccelService extends Service implements SensorEventListener,
 
     @Override
     public void onLocationChanged(Location location) {
+        /*
         try {
 
             // get weather data
@@ -261,25 +274,15 @@ public class AccelService extends Service implements SensorEventListener,
             AppEntry entry = JSONWeatherParser.getWeather(data, location);
 
             // add to db
-            db.insertWeatherData(entry);
-
+            //db.insertWeatherData(entry);
         } catch (JSONException e) {
             e.printStackTrace();
-        }
-    }
+        } */
 
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
+            // TODO: helper function
+            db.getLastMood();                   // returns 0.0 if bad, 1.0 if good
+            db.getListMode(db.getMotorData());  // returns most common activity - 0.0 = standing, 1.0 = walk, 2.0 = run
 
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
 
     }
 
