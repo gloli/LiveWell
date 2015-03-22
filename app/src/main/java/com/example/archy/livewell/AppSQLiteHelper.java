@@ -6,8 +6,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.archy.livewell.weather.AppEntry;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Created by Archy on 3/21/15.
@@ -15,6 +21,7 @@ import java.util.Locale;
 public class AppSQLiteHelper extends SQLiteOpenHelper {
 
     private SQLiteDatabase db;
+    private static AppSQLiteHelper helper;
 
     private static final String DATABASE_NAME = "livewell.db";
     private static final int DATABASE_VERSION = 1;
@@ -38,8 +45,9 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
     private static final String TABLE_WEATHER = "weather_data";
     private static final String COLUMN_WEATHER_ID = "weather_id";
     private static final String COLUMN_WEATHER_TIMESTAMP = "weather_timestamp";
-    private static final String COLUMN_WEATHER_DATA = "weather_type";
-    private String[] weather_columns = new String[] {COLUMN_WEATHER_ID, COLUMN_WEATHER_TIMESTAMP, COLUMN_WEATHER_DATA};
+    private static final String COLUMN_WEATHER_TEMP = "weather_temp";
+    private static final String COLUMN_WEATHER_CLOUDS = "weather_clouds";
+    private String[] weather_columns = new String[] {COLUMN_WEATHER_ID, COLUMN_WEATHER_TIMESTAMP, COLUMN_WEATHER_TEMP, COLUMN_WEATHER_CLOUDS};
 
     // create tables
     private static final String DB_CREATE_SENSOR = "create table "
@@ -58,12 +66,21 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
             + TABLE_WEATHER + "("
             + COLUMN_WEATHER_ID + " integer primary key autoincrement, "
             + COLUMN_WEATHER_TIMESTAMP + "timestamp not null default current_timestamp, "
-            + COLUMN_WEATHER_DATA + " double" + ");";
+            + COLUMN_WEATHER_TEMP + " float, "
+            + COLUMN_WEATHER_CLOUDS + " int" + ");";
 
 
 
     public AppSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    public static AppSQLiteHelper getInstance(Context context) {
+        if (helper == null) {
+            helper = new AppSQLiteHelper(context.getApplicationContext());
+        }
+        return helper;
+
     }
 
     @Override
@@ -95,10 +112,11 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
     }
 
     // input temp double
-    public long insertWeatherData(double temperature) {
+    public long insertWeatherData(AppEntry entry) {
         db = getWritableDatabase();
         ContentValues vals = new ContentValues();
-        vals.put(COLUMN_WEATHER_DATA, temperature);
+        vals.put(COLUMN_WEATHER_TEMP, entry.temp);
+        vals.put(COLUMN_WEATHER_CLOUDS, entry.clouds);
         long insert = db.insert(AppSQLiteHelper.TABLE_WEATHER, null, vals);
         db.close();
         return insert;
@@ -106,13 +124,38 @@ public class AppSQLiteHelper extends SQLiteOpenHelper {
 
 /* ===================== fetch from tables ===================== */
 
-//    public Double getMotorData() {
-//        db = getReadableDatabase();
-//        Cursor cursor = db.query(TABLE_SENSOR, sensor_columns, )
-//    }
+    // get last hr of sensor data
+    public ArrayList<Double> getMotorData() {
+        ArrayList<Double> classes = new ArrayList<Double>();
+        db = getReadableDatabase();
+        Calendar c = getHourBefore();
+        Cursor cursor = db.query(TABLE_SENSOR, sensor_columns,
+                COLUMN_SENSOR_TIMESTAMP + " >= '" + DATE_FORMAT.format(c.getTime()) + "'",
+                        null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                double data = cursor.getDouble(2);
+                classes.add(data);
+                cursor.moveToNext();
+            }
+        }
+        cursor.close();
+        db.close();
+        return classes;
+    }
+
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+    }
+
+    private Calendar getHourBefore() {
+        Calendar c = Calendar.getInstance();
+        Calendar UTCTime = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        UTCTime.setTimeInMillis(c.getTimeInMillis());
+        UTCTime.add(Calendar.HOUR_OF_DAY, -1);
+        return UTCTime;
     }
 }

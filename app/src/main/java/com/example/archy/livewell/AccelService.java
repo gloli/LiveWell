@@ -9,6 +9,18 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+
+import com.example.archy.livewell.weather.AppEntry;
+import com.example.archy.livewell.weather.JSONWeatherParser;
+import com.example.archy.livewell.weather.WeatherHttpClient;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,26 +30,37 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 
-public class AccelService extends Service implements SensorEventListener {
+public class AccelService extends Service implements SensorEventListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
-    AppSQLiteHelper db = new AppSQLiteHelper(this);
+    public AppSQLiteHelper db = new AppSQLiteHelper(this);
     private Messenger mClient;
     public static final int MSG_REGISTER_CLIENT = 1;
     public static final int MSG_UNREGISTER_CLIENT = 2;
     public static final int MSG_MOTOR_UPDATE = 3;
 
+    // sensor & classifier vars
     public static final int ACCELEROMETER_BLOCK_CAPACITY = 64;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
-    private ArrayList<Double> featVect = new ArrayList<>();
+    private ArrayList<Double> featVect = new ArrayList<Double>();
     private int blockIndex = 0;
     private double[] accBlock = new double[ACCELEROMETER_BLOCK_CAPACITY];
 
+    // location vars (for weather)
+    private LocationManager locationManager;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+
+
     private final Messenger mMessenger = new Messenger(
             new IncomingMessageHandler()); // Target we publish for clients
-
     static AccelService service;
     NotificationManager notifManager;
 
@@ -73,7 +96,8 @@ public class AccelService extends Service implements SensorEventListener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         mClient = intent.getParcelableExtra(MainActivity.INTENT_MSG);
         startSensorUpdate();
-        return super.onStartCommand(intent, flags, startId);
+
+        return START_NOT_STICKY;
     }
 
     // display in status bar
@@ -211,4 +235,56 @@ public class AccelService extends Service implements SensorEventListener {
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    // ==================== Google Map API Functions ====================
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d("UPDATING LOCATIONS", "ONCONNECTED");
+
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(600000); // Update location every 10 mins
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, (com.google.android.gms.location.LocationListener) this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        try {
+
+            // get weather data
+            String data = ((new WeatherHttpClient()).getWeatherData(location));
+            AppEntry entry = JSONWeatherParser.getWeather(data, location);
+
+            // add to db
+            db.insertWeatherData(entry);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+    }
+
 }

@@ -2,11 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.archy.livewell" >
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <meta-data
+            android:name="api.openweathermap.org"
+            android:value="93dc72c2ea699affa669a29eb7f594b2" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
